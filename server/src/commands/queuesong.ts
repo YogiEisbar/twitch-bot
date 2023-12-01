@@ -40,7 +40,7 @@ export const queuesong: BotCommand = {
         const spotifyLinkUrlResponse = await fetch(trackInput);
 
         if (spotifyLinkUrlResponse.status !== 200) {
-          sendChatMessage(connection, `Something went wrong adding the song to the queue. Try again?`);
+          sendChatMessage(connection, `Something went wrong adding the song to the queue yogieiDerpula. Try again?`);
           return;
         }
 
@@ -48,7 +48,7 @@ export const queuesong: BotCommand = {
         const actionHref = parseHTML(htmlResponse).window.document.querySelector('a.action')?.getAttribute('href');
 
         if (!actionHref) {
-          sendChatMessage(connection, `Something went wrong adding the song to the queue. Try again?`);
+          sendChatMessage(connection, `Something went wrong adding the song to the queue yogieiDerpula. Try again?`);
           return;
         }
 
@@ -60,7 +60,7 @@ export const queuesong: BotCommand = {
       if (!trackInput.startsWith(trackStart) && !trackInput.startsWith(openSpotifyTrackUrl) && !trackInput.startsWith(spotifyLinkUrl)) {
         sendChatMessage(
           connection,
-          `That doesn't look right... it needs to be like ${trackStart}stuff, or ${openSpotifyTrackUrl}stuff, or ${spotifyLinkUrl}stuff`,
+          `That doesn't look right... yogieiDerpula it needs to be like ${trackStart}stuff, or ${openSpotifyTrackUrl}stuff, or ${spotifyLinkUrl}stuff`,
         );
         return;
       }
@@ -70,28 +70,37 @@ export const queuesong: BotCommand = {
 
       // Check if the song is playable in the streamer's country
       if (track && !track.is_playable) {
-        sendChatMessage(connection, `Song "${track.name}" is not available for me`);
+        sendChatMessage(connection, `Song "${track.name}" is not available for me yogieiDerpula`);
         return;
       }
 
+      // Check if today is a Thursday and if the song is newer than 2010
+      const today = new Date();
+      const isThursday = today.getDay() === 4;
+      const isSongNewerThan2010 = track && new Date(track.album.release_date).getFullYear() > 2010;
+      if (isThursday && isSongNewerThan2010) {
+        sendChatMessage(connection, `It's Thursday, no songs after 2010!`);
+        return;
+      }
+      
       // Add the track to the playback queue
       const songAddedToQueue = await addSongToPlaybackQueue(`${trackStart}${trackId}`);
 
       // If the track is not added to the queue, send a message to the chat and exit
       if (!songAddedToQueue) {
-        sendChatMessage(connection, `Something went wrong adding the song to the queue. Try again?`);
+        sendChatMessage(connection, `Something went wrong adding the song to the queue yogieiDerpula. Try again?`);
         return;
       }
 
       // If the track is not found, send a message to the chat and exit
       if (!track) {
-        sendChatMessage(connection, `Song added to queue`);
+        sendChatMessage(connection, `Song added to queue yogieiDJ`);
         return;
       }
 
       // If the track is found, send a message to the chat and exit
       const trackArtists = track.artists.map((artist) => artist.name).join(', ');
-      sendChatMessage(connection, `Song "${track.name} - ${trackArtists}" added to the queue`);
+      sendChatMessage(connection, `Song "${track.name} - ${trackArtists}" added to the queue yogieiDJ`);
     }
   },
 };
