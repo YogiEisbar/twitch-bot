@@ -10,7 +10,7 @@ export const queuesong: BotCommand = {
   command: ['queuesong', 'qs', 'sr', 'songrequest'],
   id: 'queuesong',
   cooldown: 10 * SECOND_MS,
-  privileged: true,
+  privileged: false,
   description: 'Add a song to the playback queue (on Spotify)',
   callback: async (connection, parsedCommand) => {
     if (hasBotCommandParams(parsedCommand.parsedMessage)) {
@@ -94,13 +94,13 @@ export const queuesong: BotCommand = {
 
       // If the track is not found, send a message to the chat and exit
       if (!track) {
-        sendChatMessage(connection, `Song added to queue yogieiJAM`);
+        sendChatMessage(connection, `Song added to queue yogieiDJ`);
         return;
       }
 
       // If the track is found, send a message to the chat and exit
       const trackArtists = track.artists.map((artist) => artist.name).join(', ');
-      sendChatMessage(connection, `Song "${track.name} - ${trackArtists}" added to the queue yogieiJAM`);
+      sendChatMessage(connection, `Song "${track.name} - ${trackArtists}" added to the queue yogieiDJ`);
     }
   },
 };
