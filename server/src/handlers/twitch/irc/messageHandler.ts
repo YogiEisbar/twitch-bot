@@ -1,9 +1,10 @@
-import { getChatExlusionList } from '../../../chat/chatExclusionList';
+import { getChatCommandInclusionList, getChatUserExclusionList } from '../../../chat/chatFiltering';
 import { addChatMessage } from '../../../chat/chatMessages';
 import { getChatUser } from '../../../commands/helpers/findOrCreateUser';
 import { runTTS } from '../../../commands/tts';
 import Config from '../../../config';
 import { SECOND_MS, VOICES } from '../../../constants';
+import { StreamState } from '../../../streamState';
 import type { ParsedMessage } from '../../../types';
 
 const REPETITION_TIMEFRAME = Config.repeatMessageHandler.timeout * SECOND_MS;
@@ -50,7 +51,14 @@ export async function messageHandler(parsedMessage: ParsedMessage): Promise<void
   const displayName = parsedMessage.tags?.['display-name'];
   const chatMessageId = parsedMessage.tags?.['id'];
 
-  const chatExcludedUsers = getChatExlusionList();
+  const chatExcludedUsers = getChatUserExclusionList();
+  const chatIncludedCommands = getChatCommandInclusionList();
+
+  const botCommand = parsedMessage.command?.botCommand;
+
+  if (botCommand && botCommand !== 'ACTION' && !chatIncludedCommands.has(botCommand)) {
+    return;
+  }
 
   if (userId && nick && displayName && chatMessageId) {
     const chatUser = await getChatUser(userId, nick, displayName);
@@ -61,10 +69,17 @@ export async function messageHandler(parsedMessage: ParsedMessage): Promise<void
     }
 
     if (chatUser) {
+      if (StreamState.spotlightedUser === chatUser.userId && parsedMessage.parameters) {
+        await runTTS(parsedMessage.parameters);
+
+        addChatMessage({ id: chatMessageId, user: chatUser, parsedMessage, isSpotlighted: true });
+        return;
+      }
+
       if (Config.repeatMessageHandler.enabled && parsedMessage.parameters) {
         await repeatMessageHandler(parsedMessage.parameters);
       }
-      addChatMessage({ id: chatMessageId, user: chatUser, parsedMessage });
+      addChatMessage({ id: chatMessageId, user: chatUser, parsedMessage, isSpotlighted: false });
     }
   }
 }

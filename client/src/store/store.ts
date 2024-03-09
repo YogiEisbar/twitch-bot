@@ -22,6 +22,7 @@ interface Store {
   addChatMessage: (chatMessage: ChatMessage) => void;
   addChatMessages: (chatMessages: ChatMessage[]) => void;
   removeChatMessage: (chatMessage: ChatMessage) => void;
+  clearChat: () => void;
 }
 
 const useStore = create<Store>((set, get) => ({
@@ -83,7 +84,12 @@ const useStore = create<Store>((set, get) => ({
       ...state,
       chatMessages,
     }));
-    // }
+  },
+  clearChat: () => {
+    set((state) => ({
+      ...state,
+      chatMessages: [],
+    }));
   },
 }));
 

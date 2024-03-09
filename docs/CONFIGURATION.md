@@ -40,12 +40,6 @@ To get the auth_code construct your URL and enter it into the browser. Here's an
 
 Once you open this and authorize access, it will redirect you. Take the auth code from the new URL.
 
-### GitHub
-
-Ensure that the personal access token includes the scope to access and modify issues.
-
-Visit https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token to obtain the `access_token`
-
 ### SevenTV
 
 You only need to toggle the enabled flag to `true`. Internally the bot will use the Twitch account's ID to find your SevenTV ID.
@@ -84,8 +78,26 @@ Sometimes you want something to occur on a regular interval. You can set up inte
 
 You can find more information about these features in the [interval commands configuration guide](INTERVAL_COMMANDS.md)
 
-## Add users to the chat exclusion list
+## Add users to the chat user exclusion list
 
-Open `chat-exclusion-list.txt` in the root directory of the project. Add the usernames of the users you want to exclude from chat commands. Each username should be on a new line.
+Open `chat-user-exclusion-list.txt` in the root directory of the project. Add the usernames of the users you want to exclude from chat commands. Each username should be on a new line.
 
 This file will be created automatically when you run the server for the first time.
+
+For example, to exclude the user `troll` from chat commands, you would add the following line to the file:
+
+```plaintext
+troll
+```
+
+## Add commands to the chat command inclusion list
+
+Open `chat-command-inclusion-list.txt` in the root directory of the project. Add the commands you want to include in chat. Each command should be on a new line.
+
+This file will be created automatically when you run the server for the first time.
+
+For example, to add the `!tts` command to the chat command inclusion list, you would add the following line to the file:
+
+```plaintext
+tts
+```

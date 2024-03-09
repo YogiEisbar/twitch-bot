@@ -3,7 +3,7 @@ import { getSpotifyAccessToken, spotifyAuthCodeRouter } from './auth/spotify';
 import { assertTokenFileExists } from './auth/tokenManager';
 import { getTwitchAccessToken, twitchAuthCodeRouter } from './auth/twitch';
 import { loadBotCommands } from './botCommands';
-import { loadChatExclusionList } from './chat/chatExclusionList';
+import { loadChatCommandInclusionList, loadChatUserExclusionList } from './chat/chatFiltering';
 import Config, { assertConfigFileExists } from './config';
 import { runBetterTTVWebsocket } from './handlers/bttv/betterTTVWebsocket';
 import { fetchSevenTVTwitchUser } from './handlers/sevenTV/fetchSevenTVTwitchUser';
@@ -50,11 +50,10 @@ async function main() {
       loadSpotifyIntervalCommands();
     }
 
-    if (Config.github.enabled) {
-      logger.info(`${pc.green('[GitHub enabled]')} Loading GitHub bot commands`);
-    }
-
-    loadChatExclusionList();
+    // Load chat user exclusion list and chat command inclusion list
+    loadChatUserExclusionList();
+    // This list containts commands that will be shown in chat when they are used
+    loadChatCommandInclusionList();
 
     logger.info(`Getting Twitch custom rewards`);
     await fetchCustomRewards();
