@@ -60,7 +60,7 @@ export const queuesong: BotCommand = {
       if (!trackInput.startsWith(trackStart) && !trackInput.startsWith(openSpotifyTrackUrl) && !trackInput.startsWith(spotifyLinkUrl)) {
         sendChatMessage(
           connection,
-          `That doesn't look right... eisbarDerpula it needs to be like ${trackStart}stuff, or ${openSpotifyTrackUrl}stuff, or ${spotifyLinkUrl}stuff`,
+          `That doesn't look right... eisbarDerp it needs to be like ${trackStart}stuff, or ${openSpotifyTrackUrl}stuff, or ${spotifyLinkUrl}stuff`,
         );
         return;
       }
@@ -70,16 +70,16 @@ export const queuesong: BotCommand = {
 
       // Check if the song is playable in the streamer's country
       if (track && !track.is_playable) {
-        sendChatMessage(connection, `Song "${track.name}" is not available for me eisbarDerpula`);
+        sendChatMessage(connection, `Song "${track.name}" is not available for me eisbarDerp`);
         return;
       }
 
       // Check if today is a Thursday and if the song is newer than 2010
       const today = new Date();
       const isThursday = today.getDay() === 4;
-      const isSongNewerThan2010 = track && new Date(track.album.release_date).getFullYear() > 2010;
-      if (isThursday && isSongNewerThan2010) {
-        sendChatMessage(connection, `It's Thursday, no songs after 2010!`);
+      const isSongNewerThan2011 = track && new Date(track.album.release_date).getFullYear() > 2011;
+      if (isThursday && isSongNewerThan2011) {
+        sendChatMessage(connection, `It's Thursday, no songs after 2011!`);
         return;
       }
       
@@ -88,19 +88,19 @@ export const queuesong: BotCommand = {
 
       // If the track is not added to the queue, send a message to the chat and exit
       if (!songAddedToQueue) {
-        sendChatMessage(connection, `Something went wrong adding the song to the queue eisbarDerpula. Try again?`);
+        sendChatMessage(connection, `Something went wrong adding the song to the queue eisbarDerp. Try again?`);
         return;
       }
 
       // If the track is not found, send a message to the chat and exit
       if (!track) {
-        sendChatMessage(connection, `Song added to queue eisbarJAM`);
+        sendChatMessage(connection, `Song added to queue eisbarRave`);
         return;
       }
 
       // If the track is found, send a message to the chat and exit
       const trackArtists = track.artists.map((artist) => artist.name).join(', ');
-      sendChatMessage(connection, `Song "${track.name} - ${trackArtists}" added to the queue eisbarJAM`);
+      sendChatMessage(connection, `Song "${track.name} - ${trackArtists}" added to the queue eisbarRave`);
     }
   },
 };
