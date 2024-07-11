@@ -30,3 +30,4 @@ intervalCommands.json
 
 # pnpm files
 */pnpm-lock.yaml
+.tmp.driveupload
