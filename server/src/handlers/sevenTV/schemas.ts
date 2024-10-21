@@ -19,7 +19,7 @@ export const sevenTVEmoteDataSchema = z.object({
   state: z.array(z.union([z.literal('PERSONAL'), z.literal('NO_PERSONAL'), z.literal('LISTED')])),
   listed: z.boolean(),
   animated: z.boolean(),
-  owner: sevenTVEmoteDataSetOwnerSchema,
+  owner: z.optional(sevenTVEmoteDataSetOwnerSchema),
   host: z.object({
     url: z.string(),
     files: z.array(
@@ -30,7 +30,7 @@ export const sevenTVEmoteDataSchema = z.object({
         height: z.number(),
         frame_count: z.number(),
         size: z.number(),
-        format: z.union([z.literal('AVIF'), z.literal('WEBP')]),
+        format: z.union([z.literal('AVIF'), z.literal('WEBP'), z.literal('PNG'), z.literal('GIF')]),
       }),
     ),
   }),
@@ -73,14 +73,16 @@ export const sevenTVUserSchema = z.object({
       }),
     ),
   ),
-  editors: z.optional(z.array(
-    z.object({
-      id: z.string(),
-      permissions: z.number(),
-      visible: z.boolean(),
-      added_at: z.number(),
-    }),
-  )),
+  editors: z.optional(
+    z.array(
+      z.object({
+        id: z.string(),
+        permissions: z.number(),
+        visible: z.boolean(),
+        added_at: z.number(),
+      }),
+    ),
+  ),
   roles: z.array(z.string()),
   connections: z.array(
     z.object({
@@ -90,17 +92,19 @@ export const sevenTVUserSchema = z.object({
       display_name: z.string(),
       linked_at: z.number(),
       emote_capacity: z.number(),
-      emote_set_id: z.null(),
-      emote_set: z.nullable(z.object({
-        id: z.string(),
-        name: z.string(),
-        flags: z.number(),
-        tags: z.array(z.string()),
-        immutable: z.boolean(),
-        privileged: z.boolean(),
-        capacity: z.number(),
-        owner: sevenTVEmoteDataSetOwnerSchema,
-      })),
+      emote_set_id: z.nullable(z.string()),
+      emote_set: z.nullable(
+        z.object({
+          id: z.string(),
+          name: z.string(),
+          flags: z.number(),
+          tags: z.array(z.string()),
+          immutable: z.boolean(),
+          privileged: z.boolean(),
+          capacity: z.number(),
+          owner: sevenTVEmoteDataSetOwnerSchema,
+        }),
+      ),
     }),
   ),
 });
@@ -112,7 +116,7 @@ export const sevenTVTwitchUserSchema = z.object({
   display_name: z.string(),
   linked_at: z.number(),
   emote_capacity: z.number(),
-  emote_set_id: z.null(),
+  emote_set_id: z.nullable(z.string()),
   emote_set: z.object({
     id: z.string(),
     name: z.string(),

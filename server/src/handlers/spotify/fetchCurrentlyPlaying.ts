@@ -39,14 +39,20 @@ export const fetchCurrentlyPlaying = async (): Promise<SpotifySong | null> => {
 
       // If the result is an error, return null
       if (!result) {
-        logger.info('No result from Spotify, are you sure you have a song playing?');
+        logger.debug('Spotify currently playing: No result. Are you sure you have a song playing?');
         return null;
       }
 
-      const song = spotifySongSchema.parse(result);
-      getIO().emit('currentSong', song);
-      if (song.item.id && getCurrentSpotifySong()?.item.id !== song.item.id) {
-        playedSongs.push(song);
+      const songParse = spotifySongSchema.safeParse(result);
+      if (songParse.success) {
+        const song = songParse.data;
+        getIO().emit('currentSong', song);
+        if (song.item.id && getCurrentSpotifySong()?.item.id !== song.item.id) {
+          logger.debug(`Spotify currently playing: Result: ${JSON.stringify(song, null, 2)}`);
+          playedSongs.push(song);
+        }
+      } else {
+        logger.error(`JSON response from Spotify API (fetchCurrentlyPlaying) is not valid: Error: ${songParse.error.message}`);
       }
     } catch (error) {
       logger.error(error);

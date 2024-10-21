@@ -4,6 +4,9 @@ import { assertTokenFileExists } from './auth/tokenManager';
 import { getTwitchAccessToken, twitchAuthCodeRouter } from './auth/twitch';
 import { loadBotCommands } from './botCommands';
 import { loadChatCommandInclusionList, loadChatUserExclusionList } from './chat/chatFiltering';
+import { loadBadges } from './chat/loadBadges';
+import { loadCheers } from './chat/loadCheers';
+import { loadEmotes } from './chat/loadEmotes';
 import Config, { assertConfigFileExists } from './config';
 import { runBetterTTVWebsocket } from './handlers/bttv/betterTTVWebsocket';
 import { runOBSWebsocket } from './handlers/obs/obsWebsocket';
@@ -19,8 +22,9 @@ import { fetchKnownTwitchViewerBots } from './handlers/twitchinsights/twitchView
 import { intervalCommands, loadIntervalCommands, loadSpotifyIntervalCommands, runIntervalCommands } from './intervalCommands';
 import { logger } from './logger';
 import { removeOldTTSFiles } from './removeOldTTSFiles';
-import { runSocketServer } from './runSocketServer';
+import { makeIO, runSocketServer } from './runSocketServer';
 import { StreamState } from './streamState';
+import { createTTSDirectory } from './utils/createTTSDirectory';
 import { isError } from './utils/isError';
 
 async function main() {
@@ -95,8 +99,11 @@ async function main() {
       runIntervalCommands();
     }
 
+    logger.info('Setting up socket server');
+    makeIO(Config.clientPort);
+
     logger.info(`Running localhost socket server`);
-    runSocketServer();
+    runSocketServer(Config.serverPort);
 
     if (Config.betterTTV.enabled) {
       logger.info(`${pc.green('[BetterTTV enabled]')} Running BetterTTV WebSocket client`);
@@ -112,9 +119,16 @@ async function main() {
       }
     }
 
+    // Load emotes, badges and cheers
+    await loadEmotes();
+    await loadBadges();
+    await loadCheers();
+
     if (Config.obs.enabled) {
       runOBSWebsocket(Config.obs);
     }
+
+    createTTSDirectory();
   } catch (error) {
     if (isError(error)) {
       logger.error(error.message);

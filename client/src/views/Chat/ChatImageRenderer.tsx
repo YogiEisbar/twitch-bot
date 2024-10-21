@@ -9,7 +9,8 @@ import { parseFrankerFaceZModifierFlags } from './parseFrankerFaceZModifierFlags
 import { parseSevenTVModifierFlags } from './parseSevenTVModifierFlags';
 
 // emote regex which separates strings based on whitespace
-const emoteRegex = /(\s+)/g;
+const wordRegex = /(\s+)/g;
+const unicodeRegex = /([\p{So}\p{Sk}\p{S}\p{P}\p{M}])/gu;
 
 export const ChatImageRenderer = ({
   emotes,
@@ -38,8 +39,7 @@ export const ChatImageRenderer = ({
       const emoteName = message.slice(Number(positioning[0].startPosition - offset), Number(positioning[0].endPosition - offset) + 1);
       twitchEmoteMap[emoteName] = {
         origin: 'twitch',
-        src: `https://static-cdn.jtvnw.net/emoticons/v2/${emoteUrlPart}/default/dark/1.0`,
-        srcSet: `https://static-cdn.jtvnw.net/emoticons/v2/${emoteUrlPart}/default/dark/1.0 1x, https://static-cdn.jtvnw.net/emoticons/v2/${emoteUrlPart}/default/dark/2.0 2x, https://static-cdn.jtvnw.net/emoticons/v2/${emoteUrlPart}/default/dark/3.0 4x`,
+        src: `https://static-cdn.jtvnw.net/emoticons/v2/${emoteUrlPart}/default/dark/3.0`,
         width: null,
         height: null,
         modifier: false,
@@ -59,7 +59,7 @@ export const ChatImageRenderer = ({
 
   const nextMessageModifierFlags: string[] = [];
 
-  message.split(emoteRegex).forEach((match) => {
+  message.split(wordRegex).forEach((match) => {
     if (bits) {
       let closestCheer: ChatCheer | undefined = undefined;
       // A match might look like VoHiYo199, but the cheer name is VoHiYo, so we need to remove the bits
@@ -119,59 +119,64 @@ export const ChatImageRenderer = ({
       nextMessageModifierFlags.length = 0;
     } else {
       let src = '';
-      twemoji.parse(match, {
-        callback: (icon, options) => {
-          const parseCallbackOptions = options as {
-            base: string;
-            size: 'svg';
-            ext: '.svg';
-          };
-          if (icon.length === 0) {
-            return false;
-          }
 
-          // Taken from bttv
-          switch (icon) {
-            case 'a9': // ©
-            case 'ae': // ®
-            case '2122': // ™
+      match.split(unicodeRegex).forEach((unicodeThingy) => {
+        src = '';
+
+        twemoji.parse(unicodeThingy, {
+          callback: (icon, options) => {
+            const parseCallbackOptions = options as {
+              base: string;
+              size: 'svg';
+              ext: '.svg';
+            };
+            if (icon.length === 0) {
               return false;
-            default:
-              break;
-          }
+            }
 
-          src = `${parseCallbackOptions.base}${parseCallbackOptions.size}/${icon}${parseCallbackOptions.ext}`;
+            // Taken from twemoji
+            switch (icon) {
+              case 'a9': // ©
+              case 'ae': // ®
+              case '2122': // ™
+                return false;
+              default:
+                break;
+            }
 
-          return false;
-        },
-      });
+            src = `${parseCallbackOptions.base}${parseCallbackOptions.size}/${icon}${parseCallbackOptions.ext}`;
 
-      if (src) {
-        messageParts.push({
-          match,
-          emote: {
-            origin: 'emoji',
-            src,
-            srcSet: '',
-            width: null,
-            height: null,
-            modifier: false,
-            hidden: false,
-            modifierFlags: 0,
+            return false;
           },
-          cheer: undefined,
-          skip: false,
-          modifierFlags: [...nextMessageModifierFlags],
         });
-        nextMessageModifierFlags.length = 0;
-      } else {
-        messageParts.push({
-          match,
-          emote: undefined,
-          cheer: undefined,
-          skip: false,
-        });
-      }
+
+        if (src) {
+          messageParts.push({
+            match: unicodeThingy,
+            emote: {
+              origin: 'emoji',
+              src,
+              srcSet: '',
+              width: null,
+              height: null,
+              modifier: false,
+              hidden: false,
+              modifierFlags: 0,
+            },
+            cheer: undefined,
+            skip: false,
+            modifierFlags: [...nextMessageModifierFlags],
+          });
+          nextMessageModifierFlags.length = 0;
+        } else {
+          messageParts.push({
+            match: unicodeThingy,
+            emote: undefined,
+            cheer: undefined,
+            skip: false,
+          });
+        }
+      });
     }
   });
 

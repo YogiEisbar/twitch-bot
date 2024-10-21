@@ -2,28 +2,40 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { getChatMessages } from './chat/chatMessages';
 import { getFakeChatMessages } from './chat/getFakeChatMessages';
-import { loadBadges } from './chat/loadBadges';
-import { loadCheers } from './chat/loadCheers';
-import { loadEmotes } from './chat/loadEmotes';
-import { fetchCurrentlyPlaying } from './handlers/spotify/fetchCurrentlyPlaying';
+import { sendBadges } from './chat/loadBadges';
+import { sendCheers } from './chat/loadCheers';
+import { sendEmotes } from './chat/loadEmotes';
+import { getCurrentSpotifySong } from './handlers/spotify/fetchCurrentlyPlaying';
 import { logger } from './logger';
 import { Tasks } from './storage-models/task-model';
 
 const httpServer = createServer();
-const io = new Server(httpServer, {
-  cors: {
-    origin: ['http://localhost:5173'],
-  },
-});
 
-export const getIO = () => io;
+let io: Server | undefined = undefined;
+
+export function makeIO(clientPort: number) {
+  io = new Server(httpServer, {
+    cors: {
+      origin: [`http://localhost:${clientPort}`],
+    },
+  });
+}
+
+export const getIO = () => {
+  if (!io) {
+    throw new Error('Invalid getIO call: Socket server not initialized');
+  }
+  return io;
+};
 
 /**
  * Runs the socket server and listens for connections.
  * Retrieves the latest task from the database and emits it to the connected socket.
- * Listens on port 6969.
+ * Listens on port configred in the config file. Default is 6969.
  */
-export function runSocketServer() {
+export function runSocketServer(serverPort: number) {
+  const io = getIO();
+
   io.on('connection', (socket) => {
     socket.on('getTask', () => {
       const task = Tasks.data[0];
@@ -31,20 +43,20 @@ export function runSocketServer() {
         socket.emit('task', task.content);
       }
     });
-    socket.on('getSong', async () => {
-      await fetchCurrentlyPlaying();
+    socket.on('getSong', () => {
+      getIO().emit('currentSong', getCurrentSpotifySong());
     });
-    socket.on('getEmotes', async () => {
-      await loadEmotes();
+    socket.on('getEmotes', () => {
+      sendEmotes();
     });
-    socket.on('getBadges', async () => {
-      await loadBadges();
+    socket.on('getBadges', () => {
+      sendBadges();
     });
-    socket.on('getCheers', async () => {
-      await loadCheers();
+    socket.on('getCheers', () => {
+      sendCheers();
     });
     socket.on('setSelectedDisplayName', (displayName: string) => {
-      getIO().emit('setSelectedDisplayName', displayName);
+      io.emit('setSelectedDisplayName', displayName);
     });
     socket.on('getChatMessages', () => {
       getChatMessages();
@@ -53,6 +65,6 @@ export function runSocketServer() {
       getFakeChatMessages(amount);
     });
   });
-  httpServer.listen(6969);
-  logger.debug('Localhost socket server listening on port 6969');
+  httpServer.listen(serverPort);
+  logger.debug(`Localhost socket server listening on port ${serverPort}`);
 }
