@@ -75,14 +75,7 @@ export const queuesong: BotCommand = {
       }
 
       // Check if today is a Thursday and if the song is newer than 2010
-      const today = new Date();
-      const isThursday = today.getDay() === 4;
-      const isSongNewerThan2011 = track && new Date(track.album.release_date).getFullYear() > 2011;
-      if (isThursday && isSongNewerThan2011) {
-        sendChatMessage(connection, `It's Thursday, no songs after 2011!`);
-        return;
-      }
-      
+
       // Add the track to the playback queue
       const songAddedToQueue = await addSongToPlaybackQueue(`${trackStart}${trackId}`);
 
